@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jo's Tank Calculator</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 0;
+            padding: 40px;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #2a2a3e;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            width: 100%;
+            max-width: 700px;
+        }
+        h2 {
+            color: #e0e0e0;
+            font-size: 2.2em;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        h3 {
+            color: #e0e0e0;
+            font-size: 1.6em;
+            margin: 30px 0 15px;
+            text-align: center;
+            position: relative;
+        }
+        h3::after {
+            content: '';
+            width: 50px;
+            height: 3px;
+            background: #357abd;
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+            background: #33334d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid #444466;
+        }
+        th {
+            background: #357abd;
+            color: #e0e0e0;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+        td {
+            background: #3a3a52;
+            color: #e0e0e0;
+        }
+        .highlight {
+            background: #357abd;
+        }
+        .value {
+            text-align: right;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        tr {
+            transition: background 0.3s ease;
+        }
+        tr:hover td {
+            background: #444466;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #555577;
+            border-radius: 6px;
+            font-size: 1em;
+            color: #e0e0e0;
+            background: #444466;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        select {
+            text-align: center;
+            text-align-last: center;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: #444466 url('data:image/svg+xml;utf8,<svg fill="%23e0e0e0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 8px center;
+        }
+        input:focus, select:focus {
+            border-color: #357abd;
+            box-shadow: 0 0 0 3px rgba(53, 122, 189, 0.2);
+            outline: none;
+        }
+        input:not([type="text"]) {
+            text-align: right;
+        }
+        input:disabled {
+            background: #555577;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        #vassago {
+            text-align: center;
+            width: 200px;
+            display: block;
+            margin: 0 auto;
+            font-size: 1.6em;
+            border: none;
+            background: none;
+            color: #e0e0e0;
+        }
+        #vassago:focus {
+            border: 1px solid #357abd;
+            background: #444466;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2>Jo's Tank Calculator</h2>
+        <h3><input type="text" id="vassago" value="Vassago"></h3>
+        <table>
+            <tr><th class="highlight">Incoming DPS</th><td class="value"><input type="number" id="incomingDPS" value="9000" oninput="updateTankDuration()"></td></tr>
+            <tr><th class="highlight">Continuous Shield Tank (dps)</th><td class="value" id="shieldTank">9,727</td></tr>
+            <tr><th class="highlight">Continuous Armor Tank (dps)</th><td class="value" id="armorTank">85,704</td></tr>
+            <tr><th class="highlight">TOTAL TANK DURATION (s)</th><td class="value" id="totalTankDuration">Indefinitely</td></tr>
+        </table>
+
+        <h3>Shield Resists</h3>
+        <table>
+            <tr><th class="highlight">Shield Amount</th><td class="value"><input type="number" id="shieldAmount" value="1086094" oninput="updateTankDuration(); updateShieldRegen()"></td></tr>
+            <tr><th>EM Resist</th><td class="value"><input type="number" step="0.01" id="emResist" value="79.00" oninput="updateShieldAverageResists()"></td></tr>
+            <tr><th>Thermal Resist</th><td class="value"><input type="number" step="0.01" id="thermalResist" value="81.00" oninput="updateShieldAverageResists()"></td></tr>
+            <tr><th>Kinetic Resist</th><td class="value"><input type="number" step="0.01" id="kineticResist" value="85.00" oninput="updateShieldAverageResists()"></td></tr>
+            <tr><th>Explosive Resist</th><td class="value"><input type="number" step="0.01" id="explosiveResist" value="88.00" oninput="updateShieldAverageResists()"></td></tr>
+            <tr><th class="highlight">AVERAGE RESISTS (%)</th><td class="value" id="shieldAverageResists">83.50</td></tr>
+        </table>
+
+        <h3>Booster Info</h3>
+        <table>
+            <tr><th class="highlight">Booster Capacitor Draw (GJ)</th><td class="value"><input type="number" id="boosterCapDraw" value="0"></td></tr>
+            <tr><th>Number of Reps</th><td class="value"><input type="number" id="numRepsBooster" value="1" oninput="updateRepPerSecond()"></td></tr>
+            <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountBooster" value="1605" oninput="updateRepPerSecond()"></td></tr>
+            <tr><th>Rep Activation Time</th><td class="value"><input type="number" step="0.01" id="repActivationTimeBooster" value="1.00" oninput="updateRepPerSecond()"></td></tr>
+            <tr><th>Rep/ Second</th><td class="value" id="repPerSecondBooster">1,605</td></tr>
+        </table>
+
+        <h3>Passive Shield Regen</h3>
+        <table>
+            <tr><th class="highlight">Recharge Time (s)</th><td class="value"><input type="number" id="rechargeTime" value="1692" oninput="updateShieldRegen()"></td></tr>
+            <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">641.900</td></tr>
+            <tr><th>Shield Regen/s at 25%</th><td class="value" id="shieldRegen25">1604.749</td></tr>
+            <tr><th>Shield Regen/s at 50%</th><td class="value" id="shieldRegen50">1329.417</td></tr>
+            <tr><th>Shield Regen/s at 75%</th><td class="value" id="shieldRegen75">744.767</td></tr>
+        </table>
+
+        <h3>Armor Resists</h3>
+        <table>
+            <tr><th class="highlight">Armor Amount</th><td class="value"><input type="number" id="armorAmount" value="590530" oninput="updateTankDuration()"></td></tr>
+            <tr><th>Thermal Circulation Bonus</th><td class="value"><select id="thermalCircBonus" oninput="applyThermalBonus()"><option value="No">No</option><option value="Yes">Yes</option></select></td></tr>
+            <tr><th>EM Resist</th><td class="value"><input type="number" step="0.01" id="emResistArmor" value="86.00" oninput="updateBaseResist('emResistArmor'); applyThermalBonus()"></td></tr>
+            <tr><th>Thermal Resist</th><td class="value"><input type="number" step="0.01" id="thermalResistArmor" value="76.00" oninput="updateBaseResist('thermalResistArmor'); applyThermalBonus()"></td></tr>
+            <tr><th>Kinetic Resist</th><td class="value"><input type="number" step="0.01" id="kineticResistArmor" value="73.00" oninput="updateBaseResist('kineticResistArmor'); applyThermalBonus()"></td></tr>
+            <tr><th>Explosive Resist</th><td class="value"><input type="number" step="0.01" id="explosiveResistArmor" value="80.00" oninput="updateBaseResist('explosiveResistArmor'); applyThermalBonus()"></td></tr>
+            <tr><th class="highlight">AVERAGE RESISTS (%)</th><td class="value" id="armorAverageResists">78.75</td></tr>
+        </table>
+
+        <h3>Repairer Info</h3>
+        <table>
+            <tr><th class="highlight">Repairer Capacitor Draw (GJ)</th><td class="value"><input type="number" step="0.01" id="repairerCapDraw" value="0.00"></td></tr>
+            <tr><th>Number of Reps</th><td class="value"><input type="number" id="numRepsRepairer" value="1" oninput="updateRepairerRepPerSecond()"></td></tr>
+            <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountRepairer" value="110548" oninput="updateRepairerRepPerSecond()"></td></tr>
+            <tr><th>Rep Activation Time</th><td class="value"><input type="number" step="0.01" id="repActivationTimeRepairer" value="6.07" oninput="updateRepairerRepPerSecond()"></td></tr>
+            <tr><th>Rep/ Second</th><td class="value" id="repPerSecondRepairer">18,212</td></tr>
+        </table>
+    </div>
+
+    <script>
+        // Store user-entered base resist values (without bonus)
+        const baseResists = {
+            emResistArmor: 86.00,
+            thermalResistArmor: 76.00,
+            kineticResistArmor: 73.00,
+            explosiveResistArmor: 80.00
+        };
+
+        function updateTankDuration() {
+            const incomingDPS = parseFloat(document.getElementById('incomingDPS').value) || 0;
+            const shieldTank = parseFloat(document.getElementById('shieldTank').innerText.replace(/,/g, '')) || 0;
+            const armorTank = parseFloat(document.getElementById('armorTank').innerText.replace(/,/g, '')) || 0;
+            const shieldAmount = parseFloat(document.getElementById('shieldAmount').value) || 0;
+            const armorAmount = parseFloat(document.getElementById('armorAmount').value) || 0;
+            const totalTankDuration = document.getElementById('totalTankDuration');
+
+            const combinedTank = shieldTank + armorTank;
+            if (incomingDPS <= combinedTank) {
+                totalTankDuration.innerText = 'Indefinitely';
+            } else {
+                const excessDPS = incomingDPS - combinedTank;
+                const totalHitpoints = shieldAmount + armorAmount;
+                const duration = totalHitpoints / excessDPS;
+                totalTankDuration.innerText = duration >= 0 ? duration.toFixed(2) : '0';
+            }
+        }
+
+        function updateShieldAverageResists() {
+            const emResist = parseFloat(document.getElementById('emResist').value) || 0;
+            const thermalResist = parseFloat(document.getElementById('thermalResist').value) || 0;
+            const kineticResist = parseFloat(document.getElementById('kineticResist').value) || 0;
+            const explosiveResist = parseFloat(document.getElementById('explosiveResist').value) || 0;
+            const average = (emResist + thermalResist + kineticResist + explosiveResist) / 4;
+            document.getElementById('shieldAverageResists').innerText = average.toFixed(2);
+            updateContinuousShieldTank();
+        }
+
+        function updateRepPerSecond() {
+            const repAmount = parseFloat(document.getElementById('repAmountBooster').value) || 0;
+            const numReps = parseFloat(document.getElementById('numRepsBooster').value) || 0;
+            const repActivationTime = parseFloat(document.getElementById('repActivationTimeBooster').value) || 0;
+            const repPerSecond = document.getElementById('repPerSecondBooster');
+
+            try {
+                const result = repAmount * (numReps / repActivationTime);
+                repPerSecond.innerText = isFinite(result) && result >= 0 ? Math.round(result).toLocaleString() : '0';
+            } catch (e) {
+                repPerSecond.innerText = '0';
+            }
+            updateContinuousShieldTank();
+        }
+
+        function updateContinuousShieldTank() {
+            const repPerSecond = parseFloat(document.getElementById('repPerSecondBooster').innerText.replace(/,/g, '')) || 0;
+            const averageResist = parseFloat(document.getElementById('shieldAverageResists').innerText) || 0;
+            const shieldTank = document.getElementById('shieldTank');
+
+            try {
+                const denominator = ((100 - averageResist) / 100) * repPerSecond;
+                const result = repPerSecond * (repPerSecond / (denominator || 1));
+                shieldTank.innerText = isFinite(result) && result >= 0 ? Math.round(result).toLocaleString() : '0';
+            } catch (e) {
+                shieldTank.innerText = '0';
+            }
+            updateTankDuration();
+        }
+
+        function updateShieldRegen() {
+            const shieldAmount = parseFloat(document.getElementById('shieldAmount').value) || 0;
+            const rechargeTime = parseFloat(document.getElementById('rechargeTime').value) || 0;
+            const avgShieldRegen = document.getElementById('avgShieldRegen');
+            const shieldRegen25 = document.getElementById('shieldRegen25');
+            const shieldRegen50 = document.getElementById('shieldRegen50');
+            const shieldRegen75 = document.getElementById('shieldRegen75');
+
+            let avgRegen;
+            try {
+                avgRegen = shieldAmount / rechargeTime;
+                avgShieldRegen.innerText = isFinite(avgRegen) && avgRegen >= 0 ? avgRegen.toFixed(3) : '0';
+            } catch (e) {
+                avgShieldRegen.innerText = '0';
+                avgRegen = 0;
+            }
+
+            try {
+                const regen25 = avgRegen * 2.5;
+                shieldRegen25.innerText = isFinite(regen25) && regen25 >= 0 ? regen25.toFixed(3) : '0';
+            } catch (e) {
+                shieldRegen25.innerText = '0';
+            }
+
+            try {
+                const regen50 = avgRegen * 2.07106781131186;
+                shieldRegen50.innerText = isFinite(regen50) && regen50 >= 0 ? regen50.toFixed(3) : '0';
+            } catch (e) {
+                shieldRegen50.innerText = '0';
+            }
+
+            try {
+                const regen75 = avgRegen * 1.16025403784441;
+                shieldRegen75.innerText = isFinite(regen75) && regen75 >= 0 ? regen75.toFixed(3) : '0';
+            } catch (e) {
+                shieldRegen75.innerText = '0';
+            }
+        }
+
+        function updateBaseResist(resistId) {
+            const input = document.getElementById(resistId);
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                baseResists[resistId] = value; // Store the user-entered value as the base
+            }
+        }
+
+        function applyThermalBonus() {
+            const thermalCircBonus = document.getElementById('thermalCircBonus').value;
+            const bonus = thermalCircBonus === 'Yes' ? 20 : 0;
+
+            const resists = [
+                { id: 'emResistArmor', key: 'emResistArmor' },
+                { id: 'thermalResistArmor', key: 'thermalResistArmor' },
+                { id: 'kineticResistArmor', key: 'kineticResistArmor' },
+                { id: 'explosiveResistArmor', key: 'explosiveResistArmor' }
+            ];
+
+            // Enable or disable resist inputs based on Thermal Circulation Bonus
+            resists.forEach(resist => {
+                const input = document.getElementById(resist.id);
+                input.disabled = thermalCircBonus === 'Yes'; // Disable inputs when "Yes" is selected
+            });
+
+            // Apply or remove the bonus using the correct formula
+            let totalResist = 0;
+            resists.forEach(resist => {
+                const input = document.getElementById(resist.id);
+                const baseValue = baseResists[resist.key];
+                const adjustedResist = baseValue + (100 - baseValue) * (bonus / 100); // Correct formula
+                input.value = adjustedResist.toFixed(2);
+                totalResist += adjustedResist;
+            });
+
+            const averageResist = totalResist / 4;
+            document.getElementById('armorAverageResists').innerText = averageResist.toFixed(2);
+            updateContinuousArmorTank();
+        }
+
+        function updateRepairerRepPerSecond() {
+            const repAmount = parseFloat(document.getElementById('repAmountRepairer').value) || 0;
+            const numReps = parseFloat(document.getElementById('numRepsRepairer').value) || 0;
+            const repActivationTime = parseFloat(document.getElementById('repActivationTimeRepairer').value) || 0;
+            const repPerSecond = document.getElementById('repPerSecondRepairer');
+
+            try {
+                const result = repAmount * (numReps / repActivationTime);
+                repPerSecond.innerText = isFinite(result) && result >= 0 ? Math.round(result).toLocaleString() : '0';
+            } catch (e) {
+                repPerSecond.innerText = '0';
+            }
+            updateContinuousArmorTank();
+        }
+
+        function updateContinuousArmorTank() {
+            const repPerSecond = parseFloat(document.getElementById('repPerSecondRepairer').innerText.replace(/,/g, '')) || 0;
+            const averageResist = parseFloat(document.getElementById('armorAverageResists').innerText) || 0;
+            const armorTank = document.getElementById('armorTank');
+
+            try {
+                const denominator = ((100 - averageResist) / 100) * repPerSecond;
+                const result = repPerSecond * (repPerSecond / (denominator || 1));
+                armorTank.innerText = isFinite(result) && result >= 0 ? Math.round(result).toLocaleString() : '0';
+            } catch (e) {
+                armorTank.innerText = '0';
+            }
+            updateTankDuration();
+        }
+
+        updateTankDuration();
+        updateShieldAverageResists();
+        updateRepPerSecond();
+        updateShieldRegen();
+        applyThermalBonus();
+        updateRepairerRepPerSecond();
+    </script>
+</body>
+</html>
