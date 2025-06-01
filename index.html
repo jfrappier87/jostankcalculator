@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jo's Tank Calculator</title>
+    <title>Jo's Eve Echoes Calculator</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -81,11 +81,29 @@
             font-weight: 500;
             color: #e0e0e0;
         }
+        /* Style to make percentage values match the .highlight aesthetic */
+        #shieldRegenDetails td:nth-child(odd) {
+            background: #357abd;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+        /* Style to blend the empty cells below 99% and 100% into the background */
+        #shieldRegenDetails tr.empty-blended td:nth-child(5),
+        #shieldRegenDetails tr.empty-blended td:nth-child(6) {
+            background: #33334d; /* Matches the table background */
+        }
         tr {
             transition: background 0.3s ease;
         }
         tr:hover td {
             background: #444466;
+        }
+        tr:hover td:nth-child(odd) {
+            background: #357abd; /* Keep percentage cells blue on hover */
+        }
+        tr:hover td:nth-child(5).empty-blended,
+        tr:hover td:nth-child(6).empty-blended {
+            background: #33334d; /* Keep blended cells matching the background on hover */
         }
         input, select {
             width: 100%;
@@ -124,20 +142,45 @@
             display: block;
             margin: 0 auto;
             font-size: 1.6em;
-            border: none;
-            background: none;
-            color: #e0e0e0;
+            border: 2px solid #357abd;
+            background: #444466;
+            padding: 8px;
+            border-radius: 6px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+        #vassago:hover {
+            background: #555577;
         }
         #vassago:focus {
-            border: 1px solid #357abd;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
             background: #444466;
+        }
+        .details-button {
+            display: block;
+            margin: 10px auto;
+            padding: 8px 16px;
+            background: #357abd;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+        .details-button:hover {
+            background: #4a90e2;
+        }
+        .details-table {
+            display: none;
+            margin-top: 10px;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h2>Jo's Tank Calculator</h2>
+        <h2>Jo's Eve Echoes Calculator</h2>
         <h3><input type="text" id="vassago" value="Vassago"></h3>
         <table>
             <tr><th class="highlight">Incoming DPS</th><td class="value"><input type="number" id="incomingDPS" value="9000" oninput="updateTankDuration()"></td></tr>
@@ -158,7 +201,6 @@
 
         <h3>Booster Info</h3>
         <table>
-            <tr><th class="highlight">Booster Capacitor Draw (GJ)</th><td class="value"><input type="number" id="boosterCapDraw" value="0"></td></tr>
             <tr><th>Number of Reps</th><td class="value"><input type="number" id="numRepsBooster" value="1" oninput="updateRepPerSecond()"></td></tr>
             <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountBooster" value="1605" oninput="updateRepPerSecond()"></td></tr>
             <tr><th>Rep Activation Time</th><td class="value"><input type="number" step="0.01" id="repActivationTimeBooster" value="1.00" oninput="updateRepPerSecond()"></td></tr>
@@ -169,9 +211,11 @@
         <table>
             <tr><th class="highlight">Recharge Time (s)</th><td class="value"><input type="number" id="rechargeTime" value="1692" oninput="updateShieldRegen()"></td></tr>
             <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">641.900</td></tr>
-            <tr><th>Shield Regen/s at 25%</th><td class="value" id="shieldRegen25">1604.749</td></tr>
-            <tr><th>Shield Regen/s at 50%</th><td class="value" id="shieldRegen50">1329.417</td></tr>
-            <tr><th>Shield Regen/s at 75%</th><td class="value" id="shieldRegen75">744.767</td></tr>
+            <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1604.749</td></tr>
+        </table>
+        <button class="details-button" onclick="toggleDetails()">Details</button>
+        <table class="details-table" id="shieldRegenDetails">
+            <!-- Rows will be dynamically generated -->
         </table>
 
         <h3>Armor Resists</h3>
@@ -187,7 +231,6 @@
 
         <h3>Repairer Info</h3>
         <table>
-            <tr><th class="highlight">Repairer Capacitor Draw (GJ)</th><td class="value"><input type="number" step="0.01" id="repairerCapDraw" value="0.00"></td></tr>
             <tr><th>Number of Reps</th><td class="value"><input type="number" id="numRepsRepairer" value="1" oninput="updateRepairerRepPerSecond()"></td></tr>
             <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountRepairer" value="110548" oninput="updateRepairerRepPerSecond()"></td></tr>
             <tr><th>Rep Activation Time</th><td class="value"><input type="number" step="0.01" id="repActivationTimeRepairer" value="6.07" oninput="updateRepairerRepPerSecond()"></td></tr>
@@ -268,8 +311,6 @@
             const rechargeTime = parseFloat(document.getElementById('rechargeTime').value) || 0;
             const avgShieldRegen = document.getElementById('avgShieldRegen');
             const shieldRegen25 = document.getElementById('shieldRegen25');
-            const shieldRegen50 = document.getElementById('shieldRegen50');
-            const shieldRegen75 = document.getElementById('shieldRegen75');
 
             let avgRegen;
             try {
@@ -283,22 +324,109 @@
             try {
                 const regen25 = avgRegen * 2.5;
                 shieldRegen25.innerText = isFinite(regen25) && regen25 >= 0 ? regen25.toFixed(3) : '0';
+
+                // Update details table
+                updateShieldRegenDetails(shieldAmount, rechargeTime, regen25);
             } catch (e) {
                 shieldRegen25.innerText = '0';
             }
+        }
 
-            try {
-                const regen50 = avgRegen * 2.07106781131186;
-                shieldRegen50.innerText = isFinite(regen50) && regen50 >= 0 ? regen50.toFixed(3) : '0';
-            } catch (e) {
-                shieldRegen50.innerText = '0';
+        function updateShieldRegenDetails(shieldAmount, rechargeTime, peakRegenRate) {
+            const detailsTable = document.getElementById('shieldRegenDetails');
+            detailsTable.innerHTML = ''; // Clear existing rows
+
+            const averageResist = parseFloat(document.getElementById('shieldAverageResists').innerText) || 0;
+            const resistFactor = 100 / (100 - averageResist);
+
+            // Compute all Amount Tanked values
+            const tankedValues = [];
+            for (let pInt = 25; pInt <= 100; pInt++) {
+                const p = pInt / 100; // Convert percentage to decimal
+                let regenRate = 0;
+                let continuousTank = 0;
+
+                // Adjusted curve: peaks at 25% and declines to 0 at 100%
+                const regenFactor = 1 - Math.pow((p - 0.25) / 0.75, 2);
+                regenRate = peakRegenRate * regenFactor;
+
+                // Calculate Continuous Shield Tank (DPS)
+                if (p < 1) {
+                    continuousTank = regenRate * resistFactor;
+                } else {
+                    continuousTank = 0; // At 100%, tanking is 0
+                }
+
+                tankedValues.push({ shieldPercent: pInt, amountTanked: Math.round(continuousTank) });
             }
 
-            try {
-                const regen75 = avgRegen * 1.16025403784441;
-                shieldRegen75.innerText = isFinite(regen75) && regen75 >= 0 ? regen75.toFixed(3) : '0';
-            } catch (e) {
-                shieldRegen75.innerText = '0';
+            // Split into three ranges: 25-50%, 51-76%, 77-100%
+            const range1 = tankedValues.slice(0, 26); // 25% to 50% (26 entries)
+            const range2 = tankedValues.slice(26, 52); // 51% to 76% (26 entries)
+            const range3 = tankedValues.slice(52, 76); // 77% to 100% (24 entries)
+
+            // Create rows based on the maximum length of the ranges (26 rows)
+            for (let i = 0; i < 26; i++) {
+                const row = document.createElement('tr');
+                // Add 'empty-blended' class to rows 25 and 26 (0-based index: 24 and 25) to blend the empty cells
+                if (i >= 24) {
+                    row.classList.add('empty-blended');
+                }
+                let cells = '';
+
+                // Range 1: 25-50%
+                if (range1[i]) {
+                    cells += `
+                        <td class="value">${range1[i].shieldPercent}%</td>
+                        <td class="value">${range1[i].amountTanked}</td>
+                    `;
+                } else {
+                    cells += `
+                        <td class="value"></td>
+                        <td class="value"></td>
+                    `;
+                }
+
+                // Range 2: 51-76%
+                if (range2[i]) {
+                    cells += `
+                        <td class="value">${range2[i].shieldPercent}%</td>
+                        <td class="value">${range2[i].amountTanked}</td>
+                    `;
+                } else {
+                    cells += `
+                        <td class="value"></td>
+                        <td class="value"></td>
+                    `;
+                }
+
+                // Range 3: 77-100%
+                if (range3[i]) {
+                    cells += `
+                        <td class="value">${range3[i].shieldPercent}%</td>
+                        <td class="value">${range3[i].amountTanked}</td>
+                    `;
+                } else {
+                    cells += `
+                        <td class="value"></td>
+                        <td class="value"></td>
+                    `;
+                }
+
+                row.innerHTML = cells;
+                detailsTable.appendChild(row);
+            }
+        }
+
+        function toggleDetails() {
+            const detailsTable = document.getElementById('shieldRegenDetails');
+            const button = document.querySelector('.details-button');
+            if (detailsTable.style.display === 'none' || detailsTable.style.display === '') {
+                detailsTable.style.display = 'table';
+                button.textContent = 'Hide Details';
+            } else {
+                detailsTable.style.display = 'none';
+                button.textContent = 'Details';
             }
         }
 
@@ -327,7 +455,7 @@
                 input.disabled = thermalCircBonus === 'Yes'; // Disable inputs when "Yes" is selected
             });
 
-            // Apply or remove the bonus using the correct formula
+            // Apply or remove the bonus
             let totalResist = 0;
             resists.forEach(resist => {
                 const input = document.getElementById(resist.id);
