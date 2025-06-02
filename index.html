@@ -81,7 +81,13 @@
             font-weight: 500;
             color: #e0e0e0;
         }
-        /* Style to make percentage values match the .highlight aesthetic */
+        /* Center both Shield % and Amount Tanked in shieldRegenDetails */
+        #shieldRegenDetails td {
+            text-align: center; /* Center-align both columns */
+            background: #3a3a52;
+            color: #e0e0e0;
+        }
+        /* Highlight style for Shield % columns */
         #shieldRegenDetails td:nth-child(odd) {
             background: #357abd;
             color: #e0e0e0;
@@ -214,8 +220,8 @@
         <h3>Passive Shield Regen</h3>
         <table>
             <tr><th class="highlight">Recharge Time (s)</th><td class="value"><input type="number" id="rechargeTime" value="1692" oninput="updateShieldRegen()"></td></tr>
-            <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">642.234</td></tr>
-            <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1605.586</td></tr>
+            <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">642</td></tr>
+            <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1,606</td></tr>
         </table>
         <button class="details-button" onclick="toggleDetails()">Details</button>
         <table class="details-table" id="shieldRegenDetails">
@@ -387,7 +393,7 @@
             let avgRegen;
             try {
                 avgRegen = shieldAmount / rechargeTime;
-                avgShieldRegen.innerText = isFinite(avgRegen) && avgRegen >= 0 ? avgRegen.toFixed(3) : '0';
+                avgShieldRegen.innerText = isFinite(avgRegen) && avgRegen >= 0 ? Math.round(avgRegen) : '0';
             } catch (e) {
                 avgShieldRegen.innerText = '0';
                 avgRegen = 0;
@@ -395,7 +401,7 @@
 
             try {
                 const regen25 = avgRegen * 2.5;
-                shieldRegen25.innerText = isFinite(regen25) && regen25 >= 0 ? regen25.toFixed(3) : '0';
+                shieldRegen25.innerText = isFinite(regen25) && regen25 >= 0 ? Math.round(regen25).toLocaleString() : '0';
 
                 // Update details table
                 updateShieldRegenDetails(shieldAmount, rechargeTime, regen25);
@@ -410,6 +416,7 @@
 
             const averageResist = parseFloat(document.getElementById('shieldAverageResists').innerText) || 0;
             const resistFactor = 100 / (100 - averageResist);
+            const repPerSecond = parseFloat(document.getElementById('repPerSecondBooster').innerText.replace(/,/g, '')) || 0;
 
             // Compute all Amount Tanked values
             const tankedValues = [];
@@ -420,7 +427,12 @@
 
                 // Adjusted curve: peaks at 25% and declines to 0 at 100%
                 const regenFactor = 1 - Math.pow((p - 0.25) / 0.75, 2);
-                regenRate = peakRegenRate * regenFactor;
+                // Use RepPerSecond directly at 25% to match Continuous Shield Tank
+                if (pInt === 25) {
+                    regenRate = repPerSecond;
+                } else {
+                    regenRate = peakRegenRate * regenFactor;
+                }
 
                 // Calculate Continuous Shield Tank (DPS)
                 if (p < 1) {
@@ -450,7 +462,7 @@
                 if (range1[i]) {
                     cells += `
                         <td class="value">${range1[i].shieldPercent}%</td>
-                        <td class="value">${range1[i].amountTanked}</td>
+                        <td class="value">${range1[i].amountTanked.toLocaleString()}</td>
                     `;
                 } else {
                     cells += `
@@ -463,7 +475,7 @@
                 if (range2[i]) {
                     cells += `
                         <td class="value">${range2[i].shieldPercent}%</td>
-                        <td class="value">${range2[i].amountTanked}</td>
+                        <td class="value">${range2[i].amountTanked.toLocaleString()}</td>
                     `;
                 } else {
                     cells += `
@@ -476,7 +488,7 @@
                 if (range3[i]) {
                     cells += `
                         <td class="value">${range3[i].shieldPercent}%</td>
-                        <td class="value">${range3[i].amountTanked}</td>
+                        <td class="value">${range3[i].amountTanked.toLocaleString()}</td>
                     `;
                 } else {
                     cells += `
