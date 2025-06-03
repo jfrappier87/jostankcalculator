@@ -181,6 +181,11 @@
         .details-button:hover {
             background: #4a90e2;
         }
+        .details-button:disabled {
+            background: #555577;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
         .details-table {
             display: none;
             margin-top: 10px;
@@ -223,7 +228,7 @@
             <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">642</td></tr>
             <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1,606</td></tr>
         </table>
-        <button class="details-button" onclick="toggleDetails()">Details</button>
+        <button class="details-button" onclick="toggleDetails()" disabled>Details</button>
         <table class="details-table" id="shieldRegenDetails">
             <!-- Rows will be dynamically generated -->
         </table>
@@ -250,7 +255,7 @@
 
     <script>
         // Store user-entered base resist values (without bonus)
-        const baseResists = {
+        let baseResists = {
             emResistArmor: 56,
             thermalResistArmor: 43,
             kineticResistArmor: 34,
@@ -352,6 +357,7 @@
             const average = (emResist + thermalResist + kineticResist + explosiveResist) / 4;
             document.getElementById('shieldAverageResists').innerText = average.toFixed(2);
             updateContinuousShieldTank();
+            updateShieldRegen(); // Ensure Details table updates
         }
 
         function updateRepPerSecond() {
@@ -367,6 +373,8 @@
                 repPerSecond.innerText = '0';
             }
             updateContinuousShieldTank();
+            updateShieldRegen(); // Ensure Details table updates
+            updateDetailsButtonState(); // Update button state when Booster Info changes
         }
 
         function updateContinuousShieldTank() {
@@ -400,45 +408,40 @@
             }
 
             try {
-                const regen25 = avgRegen * 2.5;
-                shieldRegen25.innerText = isFinite(regen25) && regen25 >= 0 ? Math.round(regen25).toLocaleString() : '0';
+                // Calculate passive max regen rate at 25% shields
+                const passiveMaxRegen = avgRegen * 2.5;
+                shieldRegen25.innerText = isFinite(passiveMaxRegen) && passiveMaxRegen >= 0 ? Math.round(passiveMaxRegen).toLocaleString() : '0';
 
-                // Update details table
-                updateShieldRegenDetails(shieldAmount, rechargeTime, regen25);
+                // Update details table with passive max regen rate
+                updateShieldRegenDetails(shieldAmount, rechargeTime, passiveMaxRegen);
             } catch (e) {
                 shieldRegen25.innerText = '0';
             }
         }
 
-        function updateShieldRegenDetails(shieldAmount, rechargeTime, peakRegenRate) {
+        function updateShieldRegenDetails(shieldAmount, rechargeTime, passiveMaxRegen) {
             const detailsTable = document.getElementById('shieldRegenDetails');
             detailsTable.innerHTML = ''; // Clear existing rows
 
             const averageResist = parseFloat(document.getElementById('shieldAverageResists').innerText) || 0;
             const resistFactor = 100 / (100 - averageResist);
-            const repPerSecond = parseFloat(document.getElementById('repPerSecondBooster').innerText.replace(/,/g, '')) || 0;
 
-            // Compute all Amount Tanked values
+            // Compute all Amount Tanked values (passive only)
             const tankedValues = [];
             for (let pInt = 25; pInt <= 100; pInt++) {
                 const p = pInt / 100; // Convert percentage to decimal
-                let regenRate = 0;
+                let passiveRegenRate = 0;
                 let continuousTank = 0;
 
-                // Adjusted curve: peaks at 25% and declines to 0 at 100%
+                // Adjusted curve for passive regen: peaks at 25% and declines to 0 at 100%
                 const regenFactor = 1 - Math.pow((p - 0.25) / 0.75, 2);
-                // Use RepPerSecond directly at 25% to match Continuous Shield Tank
-                if (pInt === 25) {
-                    regenRate = repPerSecond;
-                } else {
-                    regenRate = peakRegenRate * regenFactor;
-                }
+                passiveRegenRate = passiveMaxRegen * regenFactor;
 
-                // Calculate Continuous Shield Tank (DPS)
+                // Calculate Amount Tanked (DPS) using only passive regen rate
                 if (p < 1) {
-                    continuousTank = regenRate * resistFactor;
+                    continuousTank = passiveRegenRate * resistFactor;
                 } else {
-                    continuousTank = 0; // At 100%, tanking is 0
+                    continuousTank = 0; // At 100%, passive tanking is 0
                 }
 
                 tankedValues.push({ shieldPercent: pInt, amountTanked: Math.round(continuousTank) });
@@ -511,6 +514,23 @@
             } else {
                 detailsTable.style.display = 'none';
                 button.textContent = 'Details';
+            }
+        }
+
+        function updateDetailsButtonState() {
+            const numReps = parseFloat(document.getElementById('numRepsBooster').value) || 0;
+            const repActivationTime = parseFloat(document.getElementById('repActivationTimeBooster').value) || 0;
+            const detailsButton = document.querySelector('.details-button');
+
+            // Enable the button only if Number of Reps = 1 and Rep Activation Time = 1
+            if (numReps === 1 && repActivationTime === 1) {
+                detailsButton.disabled = false;
+            } else {
+                detailsButton.disabled = true;
+                // Ensure the table is hidden if the button is disabled
+                const detailsTable = document.getElementById('shieldRegenDetails');
+                detailsTable.style.display = 'none';
+                detailsButton.textContent = 'Details';
             }
         }
 
@@ -595,6 +615,7 @@
         updateShieldRegen();
         applyThermalBonus();
         updateRepairerRepPerSecond();
+        updateDetailsButtonState(); // Initial button state check
     </script>
 </body>
 </html>
