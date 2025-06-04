@@ -199,14 +199,14 @@
         <h3><input type="text" id="vassago" value="Vassago"></h3>
         <table>
             <tr><th class="highlight">Incoming DPS</th><td class="value"><input type="text" id="incomingDPS" value="9,000" oninput="formatIncomingDPS(); updateTankDuration()"></td></tr>
-            <tr><th class="highlight">Continuous Shield Tank (dps)</th><td class="value" id="shieldTank">9,727</td></tr>
+            <tr><th class="highlight">Continuous Shield Tank (dps)</th><td class="value" id="shieldTank">9,909</td></tr>
             <tr><th class="highlight">Continuous Armor Tank (dps)</th><td class="value" id="armorTank">0</td></tr>
             <tr><th class="highlight">TOTAL TANK DURATION</th><td class="value" id="totalTankDuration">Indefinitely</td></tr>
         </table>
 
         <h3>Shield Resists</h3>
         <table>
-            <tr><th class="highlight">Shield Amount</th><td class="value"><input type="text" id="shieldAmount" value="1,086,450" oninput="formatShieldAmount(); updateTankDuration(); updateShieldRegen()"></td></tr>
+            <tr><th class="highlight">Shield Amount</th><td class="value"><input type="text" id="shieldAmount" value="1,106,244" oninput="formatShieldAmount(); updateTankDuration(); updateShieldRegen()"></td></tr>
             <tr><th>EM Resist</th><td class="value"><input type="number" step="1" id="emResist" value="79" oninput="updateShieldAverageResists()"></td></tr>
             <tr><th>Thermal Resist</th><td class="value"><input type="number" step="1" id="thermalResist" value="81" oninput="updateShieldAverageResists()"></td></tr>
             <tr><th>Kinetic Resist</th><td class="value"><input type="number" step="1" id="kineticResist" value="86" oninput="updateShieldAverageResists()"></td></tr>
@@ -217,16 +217,16 @@
         <h3>Booster Info</h3>
         <table>
             <tr><th>Number of Reps</th><td class="value"><input type="number" id="numRepsBooster" value="1" oninput="updateRepPerSecond()"></td></tr>
-            <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountBooster" value="1605" oninput="updateRepPerSecond()"></td></tr>
+            <tr><th>Rep Amount</th><td class="value"><input type="number" id="repAmountBooster" value="1635" oninput="updateRepPerSecond()"></td></tr>
             <tr><th>Rep Activation Time</th><td class="value"><input type="number" step="0.01" id="repActivationTimeBooster" value="1.00" oninput="updateRepPerSecond()"></td></tr>
-            <tr><th>Rep/ Second</th><td class="value" id="repPerSecondBooster">1,605</td></tr>
+            <tr><th>Rep/ Second</th><td class="value" id="repPerSecondBooster">1,635</td></tr>
         </table>
 
         <h3>Passive Shield Regen</h3>
         <table>
             <tr><th class="highlight">Recharge Time (s)</th><td class="value"><input type="number" id="rechargeTime" value="1692" oninput="updateShieldRegen()"></td></tr>
-            <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">642</td></tr>
-            <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1,606</td></tr>
+            <tr><th>Avg Shield Regen/s</th><td class="value" id="avgShieldRegen">654</td></tr>
+            <tr><th>Max Shield Regen/s (25%)</th><td class="value" id="shieldRegen25">1,634</td></tr>
         </table>
         <button class="details-button" onclick="toggleDetails()" disabled>Details</button>
         <table class="details-table" id="shieldRegenDetails">
@@ -357,7 +357,7 @@
             const average = (emResist + thermalResist + kineticResist + explosiveResist) / 4;
             document.getElementById('shieldAverageResists').innerText = average.toFixed(2);
             updateContinuousShieldTank();
-            updateShieldRegen(); // Ensure Details table updates
+            updateShieldRegen();
         }
 
         function updateRepPerSecond() {
@@ -373,7 +373,7 @@
                 repPerSecond.innerText = '0';
             }
             updateContinuousShieldTank();
-            updateShieldRegen(); // Ensure Details table updates
+            updateShieldRegen();
             updateDetailsButtonState(); // Update button state when Booster Info changes
         }
 
