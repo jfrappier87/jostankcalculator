@@ -357,7 +357,7 @@
             const average = (emResist + thermalResist + kineticResist + explosiveResist) / 4;
             document.getElementById('shieldAverageResists').innerText = average.toFixed(2);
             updateContinuousShieldTank();
-            updateShieldRegen();
+            updateShieldRegen(); // Ensure details update with resist changes
         }
 
         function updateRepPerSecond() {
@@ -373,7 +373,7 @@
                 repPerSecond.innerText = '0';
             }
             updateContinuousShieldTank();
-            updateShieldRegen();
+            updateShieldRegen(); // Ensure details update with Rep Amount changes
             updateDetailsButtonState(); // Update button state when Booster Info changes
         }
 
@@ -530,7 +530,7 @@
                 // Ensure the table is hidden if the button is disabled
                 const detailsTable = document.getElementById('shieldRegenDetails');
                 detailsTable.style.display = 'none';
-                detailsButton.textContent = 'Details';
+                button.textContent = 'Details';
             }
         }
 
